@@ -88,7 +88,12 @@ class FisherBH2(FisherTestModel):
         super().__init__(subtype, "fdr_bh", 2, alpha)
 
 
-STAT_MODELS = [FisherBonf1, FisherBonf2, FisherBH1, FisherBH2]
+STAT_MODELS = {
+    "FisherBonf1": FisherBonf1,
+    "FisherBonf2": FisherBonf2,
+    "FisherBH1": FisherBH1,
+    "FisherBH2": FisherBH2,
+}
 
 REGRESSION_TARGETS = [
     "ABC",
@@ -140,7 +145,7 @@ def train_model(model_type, train_set, params_path, target, subtype, balance=Fal
 
     if model_type in ["Bayes", "Complement"]:
         params = dict()
-    elif model_type in STAT_MODELS:
+    elif model_type in STAT_MODELS.keys():
         params = {"subtype": subtype}
     elif isinstance(params_path, dict):
         params = params_path
@@ -193,7 +198,7 @@ def get_coefficients(model, features):
         model, RandomForestRegressor
     ):
         coefs = [model.feature_importances_] * len(index)
-    elif np.array([isinstance(model, clf) for clf in STAT_MODELS]).any():
+    elif np.array([isinstance(model, clf) for clf in STAT_MODELS.values()]).any():
         coefs = model.mutations.copy()
         coefs["pos"] = 1 - coefs.iloc[:, 0]
         coefs.columns = [0, 1]
