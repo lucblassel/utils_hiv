@@ -198,6 +198,19 @@ def choose_subtype(dataset_path, metadata_path, subtype):
     return dataset.filter(index, axis=0)
 
 
+def exclude_subtype(dataset_path, metadata_path, subtype):
+    """
+    exclude samples of given subtype from dataset
+    """
+    dataset = pd.read_csv(dataset_path, sep='\t', header=0, index_col=0)
+    metadata = pd.read_csv(metadata_path, sep='\t').set_index('id')
+
+    index = metadata[metadata.filter(regex=r'.*(s|S)ubtype.*',
+                                     axis=1).iloc[:, 0] != subtype].index
+
+    return dataset.filter(index, axis=0)
+
+
 def split_dataset(dataset_path, target, test_proportion=0.2):
     """
     split dataset in training and testing set
