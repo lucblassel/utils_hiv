@@ -21,6 +21,7 @@ from sklearn.neighbors import KNeighborsClassifier
 
 from .data_utils import split_data, subsampling_balance
 from .metrics import *
+from .DRM_utils import *
 
 HERE = os.path.dirname(__file__)
 
@@ -92,11 +93,66 @@ class FisherBH2(FisherTestModel):
         super().__init__(subtype, DRMs, seqs, "fdr_bh", 2, alpha)
 
 
+class DRMClassifier:
+    choices = {
+        "SDRM": get_SDRMs,
+        "DRM": get_DRMs_only,
+        "ALL": get_all_DRMs,
+        "ACCESSORY": get_accessory,
+        "STANDALONE": get_standalone,
+        "NRTI": get_NRTI,
+        "NNRTI": get_NNRTI,
+        "OTHER": get_Other,
+    }
+
+    def __init__(self, type, votes):
+        self.votes = votes
+        self.classes_ = [0, 1]
+        self.mutations = DRMClassifier.choices.get(type)()
+        if self.mutations is None:
+            raise ValueError(
+                f"wrong mutation class, must one of: {DRMClassifier.choices}"
+            )
+
+    def fit(self, *args, **kwargs):
+        pass
+
+    def predict(self, X, *args, **kwargs):
+        return (X.filter(self.mutations, axis=1).sum(axis=1) >= self.votes).astype(int)
+
+
+class DRMs1(DRMClassifier):
+    def __init__(self):
+        super().__init__("ALL", 1)
+
+
+class DRMs2(DRMClassifier):
+    def __init__(self):
+        super().__init__("ALL", 2)
+
+
+class SDRMs1(DRMClassifier):
+    def __init__(self):
+        super().__init__("SDRM", 1)
+
+
+class SDRMs2(DRMClassifier):
+    def __init__(self):
+        super().__init__("SDRM", 2)
+
+
 STAT_MODELS = {
     "FisherBonf1": FisherBonf1,
     "FisherBonf2": FisherBonf2,
     "FisherBH1": FisherBH1,
     "FisherBH2": FisherBH2,
+}
+
+DRM_MODELS = {
+    "DRMs1": DRMs1,
+    "DRMs2": DRMs2,
+    "SDRMs1": SDRMs1,
+    "SDRMs2": SDRMs2,
 }
 
 REGRESSION_TARGETS = [
@@ -122,6 +178,10 @@ CLASSIFICATION_MODELS = {
     "FisherBonf2": FisherBonf2,
     "FisherBH1": FisherBH1,
     "FisherBH2": FisherBH2,
+    "DRMs1": DRMs1,
+    "DRMs2": DRMs2,
+    "SDRMs1": SDRMs1,
+    "SDRMs2": SDRMs2,
 }
 
 REGRESSION_MODELS = {"RF": RandomForestRegressor, "Lasso": LassoCV}
@@ -208,6 +268,10 @@ def get_coefficients(model, features):
         coefs = model.mutations.copy()
         coefs["pos"] = 1 - coefs.iloc[:, 0]
         coefs.columns = [0, 1]
+        return coefs.transpose()
+    elif np.array([isinstance(model, clf) for clf in DRM_MODELS.values()]).any():
+        coefs = pd.DataFrame([[0, 0]] * len(features), index=features, columns=[0, 1])
+        coefs.filter(model.mutations, axis=0).loc[:, 1] = 1
         return coefs.transpose()
     else:
         coefs = model.coef_
