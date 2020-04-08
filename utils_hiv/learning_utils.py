@@ -39,21 +39,25 @@ class NoCrashModel:
 class FisherTestModel:
     CORRECTIONS = ["Bonferroni", "fdr_bh", "fdr_by"]
 
-    def __init__(self, subtype, correction, n_vote, alpha=0.05):
+    def __init__(self, subtype, DRMs, seqs, correction, n_vote, alpha=0.05):
         if correction not in FisherTestModel.CORRECTIONS:
             raise ValueError(
                 f"correction must be one of following: {FisherTestModel.CORRECTIONS}"
             )
         self.n_vote = n_vote
         self.correction, self.subtype, self.alpha = correction, subtype, alpha
-        self.mutations = self._read_file(correction, subtype, alpha)
+        self.mutations = self._read_file(correction, subtype, DRMs, seqs, alpha)
         self.classes_ = [0, 1]
 
-    def _read_file(self, correction, subtype, alpha):
+    def _read_file(self, correction, subtype, DRMs, seqs, alpha):
         mutations = pd.read_csv(
             os.path.join(HERE, "data/fisher_p_values.tsv"), sep="\t", index_col=0
         )
-        subset = mutations[(mutations["subtype"] == subtype)][[correction]]
+        subset = mutations[
+            (mutations["subtype"] == subtype)
+            & (mutations["DRMs"].apply(str.upper) == DRMs.upper())
+            & (mutations["seqs"].apply(str.upper) == seqs.upper())
+        ][[correction]]
         return subset
 
     def fit(self, *args, **kwargs):
@@ -69,23 +73,23 @@ class FisherTestModel:
 
 
 class FisherBonf1(FisherTestModel):
-    def __init__(self, subtype, alpha=0.05):
-        super().__init__(subtype, "Bonferroni", 1, alpha)
+    def __init__(self, subtype, DRMs, seqs, alpha=0.05):
+        super().__init__(subtype, DRMs, seqs, "Bonferroni", 1, alpha)
 
 
 class FisherBonf2(FisherTestModel):
-    def __init__(self, subtype, alpha=0.05):
-        super().__init__(subtype, "Bonferroni", 2, alpha)
+    def __init__(self, subtype, DRMs, seqs, alpha=0.05):
+        super().__init__(subtype, DRMs, seqs, "Bonferroni", 2, alpha)
 
 
 class FisherBH1(FisherTestModel):
-    def __init__(self, subtype, alpha=0.05):
-        super().__init__(subtype, "fdr_bh", 1, alpha)
+    def __init__(self, subtype, DRMs, seqs, alpha=0.05):
+        super().__init__(subtype, DRMs, seqs, "fdr_bh", 1, alpha)
 
 
 class FisherBH2(FisherTestModel):
-    def __init__(self, subtype, alpha=0.05):
-        super().__init__(subtype, "fdr_bh", 2, alpha)
+    def __init__(self, subtype, DRMs, seqs, alpha=0.05):
+        super().__init__(subtype, DRMs, seqs, "fdr_bh", 2, alpha)
 
 
 STAT_MODELS = {
@@ -135,7 +139,9 @@ def pair_measure_with_features(features, measures):
     return paired
 
 
-def train_model(model_type, train_set, params_path, target, subtype, balance=False):
+def train_model(
+    model_type, train_set, params_path, target, subtype, DRMs, seqs, balance=False
+):
 
     if target in REGRESSION_TARGETS:
         target = f"{target}_Score"
@@ -146,7 +152,7 @@ def train_model(model_type, train_set, params_path, target, subtype, balance=Fal
     if model_type in ["Bayes", "Complement"]:
         params = dict()
     elif model_type in STAT_MODELS.keys():
-        params = {"subtype": subtype}
+        params = {"subtype": subtype, "DRMs": DRMs, "seqs": seqs}
     elif isinstance(params_path, dict):
         params = params_path
     else:
