@@ -12,6 +12,27 @@ HERE = os.path.dirname(__file__)
 CONSENSUS_FASTA = "data/consensus.fa"
 
 
+class Mutation:
+
+    regex = r'(?P<wild>[A-Z])?_?(?P<pos>\d+)_?(?P<mut>.+)'
+
+    def __init__(self, text):
+        match = re.match(Mutation.regex, text)
+        if match is None:
+            raise ValueError('This feature is not a mutation')
+        attributes = match.groupdict()
+        self.wild, self.mut = attributes['wild'], attributes['mut']
+        self.pos = int(attributes['pos'])
+
+    def __lt__(self, other):
+        if self.pos < other.pos:
+            return True
+        if self.pos > other.pos:
+            return False
+        return self.mut < other.mut
+
+
+
 def _IdsFromSubtypes(subtypes):
     """
     Get id for consensus sequence from subtype in dataset
