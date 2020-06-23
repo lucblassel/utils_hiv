@@ -49,26 +49,27 @@ if __name__ == "__main__":
     uk.drop(to_drop, axis=1, inplace=True)
 
     pvals = []
-    for subtype in ["ALL", "B", "C"]:
-        for name_drms in ["None", "ALL"]:
-            for name_seqs in ["None", "DRM", "NO DRM"]:
-                if subtype != "ALL":
-                    data = uk[uk["REGAsubtype"] == subtype].copy()
-                else:
-                    data = uk.copy()
-                if name_drms == "ALL":
-                    data.drop(drms, axis=1, errors="ignore", inplace=True)
-                if name_seqs == "DRM":
-                    data = data[data["hasDRM"] == 0]
-                if name_seqs == "NO DRM":
-                    data = data[data["hasDRM"] == 1]
-                pval = get_pvalue(data)
-                pval["subtype"], pval["DRMs"], pval["seqs"] = subtype, name_drms, name_seqs
-                pvals.append(pval)
+    for target in ['encoded_label', 'hasDRM', 'is_resistant']:
+        for subtype in ["ALL", "B", "C"]:
+            for name_drms in ["None", "ALL"]:
+                for name_seqs in ["None", "DRM", "NO DRM"]:
+                    if subtype != "ALL":
+                        data = uk[uk["REGAsubtype"] == subtype].copy()
+                    else:
+                        data = uk.copy()
+                    if name_drms == "ALL":
+                        data.drop(drms, axis=1, errors="ignore", inplace=True)
+                    if name_seqs == "DRM":
+                        data = data[data["hasDRM"] == 0]
+                    if name_seqs == "NO DRM":
+                        data = data[data["hasDRM"] == 1]
+                    pval = get_pvalue(data, target=target)
+                    pval["subtype"], pval["DRMs"], pval["seqs"], pval["target"] = subtype, name_drms, name_seqs, target
+                    pvals.append(pval)
 
 
     pval_all = pd.concat(pvals, axis=0)
-    subset = pval_all.loc[:, ["Bonferroni", "fdr_bh", "fdr_by", "DRMs", "seqs", "subtype"]]
+    subset = pval_all.loc[:, ["Bonferroni", "fdr_bh", "fdr_by", "DRMs", "seqs", "subtype", "target"]]
 
     subset.to_csv(
         args.output,
