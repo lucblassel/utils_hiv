@@ -33,10 +33,11 @@ def get_pvalue(df, target="encoded_label"):
 
 if __name__ == "__main__":
     import argparse
+
     parser = argparse.ArgumentParser()
-    parser.add_argument('--output', '-o', required=True)
-    parser.add_argument('--dataset', '-d', required=True) # UK dataset
-    parser.add_argument('--metadata', '-m', required=True)
+    parser.add_argument("--output", "-o", required=True)
+    parser.add_argument("--dataset", "-d", required=True)  # UK dataset
+    parser.add_argument("--metadata", "-m", required=True)
     args = parser.parse_args()
 
     drms = get_all_DRMs()
@@ -49,7 +50,7 @@ if __name__ == "__main__":
     uk.drop(to_drop, axis=1, inplace=True)
 
     pvals = []
-    for target in ['encoded_label', 'hasDRM', 'is_resistant']:
+    for target in ["encoded_label", "hasDRM", "is_resistant"]:
         for subtype in ["ALL", "B", "C"]:
             for name_drms in ["None", "ALL"]:
                 for name_seqs in ["None", "DRM", "NO DRM"]:
@@ -64,16 +65,19 @@ if __name__ == "__main__":
                     if name_seqs == "NO DRM":
                         data = data[data["hasDRM"] == 1]
                     pval = get_pvalue(data, target=target)
-                    pval["subtype"], pval["DRMs"], pval["seqs"], pval["target"] = subtype, name_drms, name_seqs, target
+                    pval["subtype"], pval["DRMs"], pval["seqs"], pval["target"] = (
+                        subtype,
+                        name_drms,
+                        name_seqs,
+                        target,
+                    )
                     pvals.append(pval)
 
-
     pval_all = pd.concat(pvals, axis=0)
-    subset = pval_all.loc[:, ["Bonferroni", "fdr_bh", "fdr_by", "DRMs", "seqs", "subtype", "target"]]
+    subset = pval_all.loc[
+        :, ["Bonferroni", "fdr_bh", "fdr_by", "DRMs", "seqs", "subtype", "target"]
+    ]
 
     subset.to_csv(
-        args.output,
-        sep="\t",
-        index=True,
-        header=True,
+        args.output, sep="\t", index=True, header=True,
     )

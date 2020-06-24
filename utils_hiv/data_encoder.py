@@ -12,36 +12,36 @@ HERE = os.path.dirname(__file__)
 SEQUENCE_ID_COL = "inputSequence"
 CONSENSUS_FASTA = "data/consensus.fa"
 
-NRTI = ['ABC', 'AZT', 'FTC', '3TC', 'TDF']
-NNRTI = ['DOR', 'EFV', 'ETR', 'NVP', 'RPV']
+NRTI = ["ABC", "AZT", "FTC", "3TC", "TDF"]
+NNRTI = ["DOR", "EFV", "ETR", "NVP", "RPV"]
 
 SUBTYPES = [
-    'A',
-    'A2',
-    'B',
-    'C',
-    'CRF01_AE',
-    'CRF02_AG',
-    'CRF04_cpx',
-    'CRF05_DF',
-    'CRF06_cpx',
-    'CRF09_cpx',
-    'CRF10_CD',
-    'CRF11_cpx',
-    'CRF13_cpx',
-    'CRF18_cpx',
-    'CRF22_01A1',
-    'CRF25_cpx',
-    'CRF37_cpx',
-    'CRF45_cpx',
-    'CRF49_cpx',
-    'D',
-    'F',
-    'F2',
-    'G',
-    'H',
-    'J',
-    'K'
+    "A",
+    "A2",
+    "B",
+    "C",
+    "CRF01_AE",
+    "CRF02_AG",
+    "CRF04_cpx",
+    "CRF05_DF",
+    "CRF06_cpx",
+    "CRF09_cpx",
+    "CRF10_CD",
+    "CRF11_cpx",
+    "CRF13_cpx",
+    "CRF18_cpx",
+    "CRF22_01A1",
+    "CRF25_cpx",
+    "CRF37_cpx",
+    "CRF45_cpx",
+    "CRF49_cpx",
+    "D",
+    "F",
+    "F2",
+    "G",
+    "H",
+    "J",
+    "K",
 ]
 
 
@@ -51,14 +51,14 @@ def _IdsFromSubtypes(subtypes):
     """
     name = "CONSENSUS_"
     names = []
-    recombinants = re.compile(r'CRF\d{2}_\S+')
+    recombinants = re.compile(r"CRF\d{2}_\S+")
     for subtype in subtypes:
         if subtype in ["B", "C", "D", "G", "H"]:
             names += [name + subtype]
         elif subtype in ["A", "F"]:
             names += [name + subtype + str(i) for i in range(1, 3)]
         elif recombinants.match(subtype):
-            end = subtype[3:].split('_')
+            end = subtype[3:].split("_")
             names += [name + end[0] + "_" + end[1].upper()]
         else:
             return None
@@ -71,11 +71,10 @@ def _readSeqs(subtypes):
     reads consensus sequences from chosen subtypes
     """
     ids = _IdsFromSubtypes(subtypes)
-    records = list(SeqIO.parse(os.path.join(HERE, CONSENSUS_FASTA), 'fasta'))
+    records = list(SeqIO.parse(os.path.join(HERE, CONSENSUS_FASTA), "fasta"))
     if ids:
         return [list(rec.seq) for rec in records if rec.id in ids]
-    else:
-        return [list(rec.seq) for rec in records]
+    return [list(rec.seq) for rec in records]
 
 
 def getConsensusAAs(subtypes):
@@ -83,10 +82,13 @@ def getConsensusAAs(subtypes):
     get OneHot encoded features corresponding to chosen consensus sequences
     """
     seqs = _readSeqs(subtypes)
-    vars = [["{}_{}".format(i+1, AA) for (i, AA)
-             in zip(range(len(seq)), seq)] for seq in seqs]
+    vars_ = [
+        ["{}_{}".format(i + 1, AA) for (i, AA) in zip(range(len(seq)), seq)]
+        for seq in seqs
+    ]
 
-    return list(set([var for varSet in vars for var in varSet]))
+    return list(set([var for varSet in vars_ for var in varSet]))
+
 
 def reader(naive_filename, treated_filename, truncate):
     """reads the 2 .tsv files and returns the concatenated DataFrame
@@ -105,26 +107,21 @@ def reader(naive_filename, treated_filename, truncate):
     truncate_filter = [str(pos) for pos in range(truncate[0], truncate[1] + 1)]
     all_sequences = []
 
-    filenames = {'naive':naive_filename, 'treated':treated_filename}
+    filenames = {"naive": naive_filename, "treated": treated_filename}
 
     for label, filename in filenames.items():
-        sequences = (
-            pd.read_csv(filename, sep='\t')
-                .set_index('Sequence Names')
-        )
+        sequences = pd.read_csv(filename, sep="\t").set_index("Sequence Names")
         truncated = sequences.filter(truncate_filter, axis=1)
-        truncated['label'] = label
+        truncated["label"] = label
         truncated.index.names = [SEQUENCE_ID_COL]
-        all_sequences.append(truncated.drop('Consensus'))
-    
-    consensus = truncated.loc['Consensus'].drop('label')
+        all_sequences.append(truncated.drop("Consensus"))
+
+    consensus = truncated.loc["Consensus"].drop("label")
     sequences = pd.concat(all_sequences, axis=0)
     sequences.index = sequences.index.astype(str)
 
-    return (
-        sequences,
-        consensus
-    )
+    return (sequences, consensus)
+
 
 def read_metadata(filename):
     """reads metadata file
@@ -136,14 +133,12 @@ def read_metadata(filename):
         pandas.DataFrame -- metadata Dataframe
     """
 
-    metadata = (
-        pd.read_csv(filename, sep='\t')\
-            .set_index('id')
-    )
+    metadata = pd.read_csv(filename, sep="\t").set_index("id")
     metadata.index.names = [SEQUENCE_ID_COL]
     metadata.index = metadata.index.astype(str)
 
     return metadata
+
 
 def get_resistance_scores(resistance_files):
     """
@@ -151,20 +146,17 @@ def get_resistance_scores(resistance_files):
     from the HIVDB resistance summary files 
     """
     resistances = pd.concat(
-        pd.read_csv(name, sep='\t')
-        for name in resistance_files
-    ).set_index('Sequence Name')
+        pd.read_csv(name, sep="\t") for name in resistance_files
+    ).set_index("Sequence Name")
 
-    scores = resistances.filter(
-        [f"{t} Score" for t in NRTI + NNRTI],
-        axis=1
-    )
+    scores = resistances.filter([f"{t} Score" for t in NRTI + NNRTI], axis=1)
 
     scores.columns = scores.columns.map(lambda x: x.replace(" ", "_"))
-    scores['mean_score'] = scores.mean(axis=1)
+    scores["mean_score"] = scores.mean(axis=1)
     scores.index = scores.index.astype(str)
 
     return scores
+
 
 def fill_consensus_AAs(pretty_pairwise_sequences, consensus):
     """replaces "-" symbol by the consensus AA for that position in the
@@ -180,15 +172,11 @@ def fill_consensus_AAs(pretty_pairwise_sequences, consensus):
     """
 
     def get_AA(AA, col_name, consensus):
-        return consensus[col_name] if AA.strip() == '-' else AA
+        return consensus[col_name] if AA.strip() == "-" else AA
 
-    return (
-        pretty_pairwise_sequences
-            .apply(lambda col: col
-                .apply(lambda AA: get_AA(AA, col.name, consensus))
-                )
-            .applymap(lambda AA: AA.replace('.', '-'))
-    )
+    return pretty_pairwise_sequences.apply(
+        lambda col: col.apply(lambda AA: get_AA(AA, col.name, consensus))
+    ).applymap(lambda AA: AA.replace(".", "-"))
 
 
 def get_single_AA_freqs(sequences_df):
@@ -222,14 +210,16 @@ def get_single_AAs(sequences_df, total_freqs):
     """
 
     def get_most_frequent_single_AA(AAs, freqs):
-            if len(AAs) == 1 or AAs == "del":
-                    return AAs
-            return freqs.loc[list(AAs)].sort_values(ascending=False).index[0]
+        if len(AAs) == 1 or AAs == "del":
+            return AAs
+        return freqs.loc[list(AAs)].sort_values(ascending=False).index[0]
 
     return sequences_df.apply(
         lambda col: col.apply(
             lambda AAs: get_most_frequent_single_AA(AAs, total_freqs[col.name])
-        ) if col.name != 'label' else col
+        )
+        if col.name != "label"
+        else col
     )
 
 
@@ -248,18 +238,14 @@ def choose_subtype(sequences, metadata, chosen_subtype):
 
     subtype_col = metadata.filter(regex=".*(s|S)ubtype.*", axis=1)
     cleaned = subtype_col[subtype_col.columns[0]].apply(
-        lambda subtype:
-            subtype.split('(')[0].strip()
+        lambda subtype: subtype.split("(")[0].strip()
     )
     unique_subtypes = cleaned.unique().tolist()
 
-    if chosen_subtype.upper() in ('ALL', 'NONE'):
+    if chosen_subtype.upper() in ("ALL", "NONE"):
         return sequences, unique_subtypes
 
-    return (
-        sequences[cleaned == chosen_subtype],
-        unique_subtypes
-    )
+    return (sequences[cleaned == chosen_subtype], unique_subtypes)
 
 
 def get_features_to_remove(dataset_subtypes):
@@ -283,112 +269,123 @@ def get_features_to_remove(dataset_subtypes):
     return features_to_remove
 
 
-def process(naive_file, treated_file, metadata_file, resistance_files, outfile, subtype='All', truncate=[41, 235]):
-        print("reading sequences and metadata")
-        raw_sequences, consensus = reader(
-            naive_file, treated_file, truncate
-            )
+def process(
+    naive_file,
+    treated_file,
+    metadata_file,
+    resistance_files,
+    outfile,
+    subtype="All",
+    truncate=[41, 235],
+):
+    print("reading sequences and metadata")
+    raw_sequences, consensus = reader(naive_file, treated_file, truncate)
 
-        metadata = read_metadata(metadata_file)
+    metadata = read_metadata(metadata_file)
 
-        print(f"choosing {subtype} subtype(s)")
-        chosen_sequences, dataset_subtypes = choose_subtype(
-            raw_sequences, metadata, subtype
-            )
+    print(f"choosing {subtype} subtype(s)")
+    chosen_sequences, dataset_subtypes = choose_subtype(
+        raw_sequences, metadata, subtype
+    )
 
-        print("Filling with consensus AAs")
-        AA_sequences = fill_consensus_AAs(chosen_sequences, consensus)
-        freqs = get_single_AA_freqs(AA_sequences.drop('label', axis=1))
-        single_AA_sequences = get_single_AAs(AA_sequences, freqs)
+    print("Filling with consensus AAs")
+    AA_sequences = fill_consensus_AAs(chosen_sequences, consensus)
+    freqs = get_single_AA_freqs(AA_sequences.drop("label", axis=1))
+    single_AA_sequences = get_single_AAs(AA_sequences, freqs)
 
-        print("OneHot encoding")
-        columns_to_encode = single_AA_sequences.columns.drop('label')
-        encoder = OneHotEncoder(
-            use_cat_names=True,
-            handle_unknown='ignore',
-            cols=columns_to_encode.tolist()
-            )
-        encoded_sequences = encoder.fit_transform(single_AA_sequences)
+    print("OneHot encoding")
+    columns_to_encode = single_AA_sequences.columns.drop("label")
+    encoder = OneHotEncoder(
+        use_cat_names=True, handle_unknown="ignore", cols=columns_to_encode.tolist()
+    )
+    encoded_sequences = encoder.fit_transform(single_AA_sequences)
 
-        print("removing consensus features")
-        features_to_remove = get_features_to_remove(dataset_subtypes)
-        total_sequences = encoded_sequences.drop(
-            columns=features_to_remove,
-            errors='ignore'
-        )
+    print("removing consensus features")
+    features_to_remove = get_features_to_remove(dataset_subtypes)
+    total_sequences = encoded_sequences.drop(
+        columns=features_to_remove, errors="ignore"
+    )
 
-        total_sequences['encoded_label'] = (
-            total_sequences['label']
-                .apply({'treated':1, 'naive':0}.get)
-        )
+    total_sequences["encoded_label"] = total_sequences["label"].apply(
+        {"treated": 1, "naive": 0}.get
+    )
 
-        drms = get_all_DRMs()
-        total_sequences['hasDRM'] = (
-            total_sequences
-                .filter(drms, axis=1)
-                .any(axis=1)
-                .astype(int)
-        )
+    drms = get_all_DRMs()
+    total_sequences["hasDRM"] = (
+        total_sequences.filter(drms, axis=1).any(axis=1).astype(int)
+    )
 
-        total_sequences['is_resistant'] = (
-            total_sequences[['encoded_label', 'hasDRM']]
-                .any(axis=1)
-                .astype(int)
-        )
-        
-        print("getting resistance scores")
-        resistance_scores = get_resistance_scores(resistance_files)
+    total_sequences["is_resistant"] = (
+        total_sequences[["encoded_label", "hasDRM"]].any(axis=1).astype(int)
+    )
 
-        print("saving dataset to disk")
-        joined = total_sequences.join(resistance_scores)
-        joined.to_csv(outfile, sep='\t', index=True, header=True)
+    print("getting resistance scores")
+    resistance_scores = get_resistance_scores(resistance_files)
+
+    print("saving dataset to disk")
+    joined = total_sequences.join(resistance_scores)
+    joined.to_csv(outfile, sep="\t", index=True, header=True)
+
 
 if __name__ == "__main__":
-    
+
     import argparse
-    parser = argparse.ArgumentParser(description='''processes data extracted
-        from HIVdB for machine learning''')
-    parser.add_argument(
-        '--naive',
-        help='tab delimited file pairwise mutations for naive samples',
-        required=True)
-    parser.add_argument(
-        '--treated',
-        help='tab delimited file pairwise mutations for treated samples',
-        required=True)
-    parser.add_argument(
-        '--metadata',
-        help='tab delimited file with metadata on sequences',
-        required=True)
-    parser.add_argument(
-        '--resistance',
-        help='tab delimited resistance summary file from the HIVDB program',
-        nargs=2,
-        required=True
+
+    parser = argparse.ArgumentParser(
+        description="""processes data extracted
+        from HIVdB for machine learning"""
     )
     parser.add_argument(
-        '--outfile',
-        help='filepath for the created dataset',
-        required=True)
+        "--naive",
+        help="tab delimited file pairwise mutations for naive samples",
+        required=True,
+    )
     parser.add_argument(
-        '--subtype',
-        help='If you want to restrict the data to a certain subtype',
+        "--treated",
+        help="tab delimited file pairwise mutations for treated samples",
+        required=True,
+    )
+    parser.add_argument(
+        "--metadata",
+        help="tab delimited file with metadata on sequences",
+        required=True,
+    )
+    parser.add_argument(
+        "--resistance",
+        help="tab delimited resistance summary file from the HIVDB program",
+        nargs=2,
+        required=True,
+    )
+    parser.add_argument(
+        "--outfile", help="filepath for the created dataset", required=True
+    )
+    parser.add_argument(
+        "--subtype",
+        help="If you want to restrict the data to a certain subtype",
         required=False,
-        nargs='?',
+        nargs="?",
         default="All",
-        type=str)
+        type=str,
+    )
     parser.add_argument(
-        '--truncate',
-        help='''define custom first and last AA positions for training set
-        sequences''',
+        "--truncate",
+        help="""define custom first and last AA positions for training set
+        sequences""",
         required=False,
         nargs=2,
         default=[41, 235],
-        type=int)
+        type=int,
+    )
     params = parser.parse_args()
 
     print(f"starting data processing with parameters:\n{params}")
 
-    process(params.naive, params.treated, params.metadata, params.resistance, params.outfile, params.subtype, params.truncate)
-
-
+    process(
+        params.naive,
+        params.treated,
+        params.metadata,
+        params.resistance,
+        params.outfile,
+        params.subtype,
+        params.truncate,
+    )

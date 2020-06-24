@@ -6,7 +6,16 @@ import pandas as pd
 from Bio import SeqIO
 from sklearn.model_selection import RepeatedStratifiedKFold, train_test_split
 
-from .DRM_utils import *
+from .DRM_utils import (
+    get_SDRMs,
+    get_DRMs_only,
+    get_all_DRMs,
+    get_accessory,
+    get_standalone,
+    get_NRTI,
+    get_NNRTI,
+    get_Other,
+)
 
 HERE = os.path.dirname(__file__)
 CONSENSUS_FASTA = "data/consensus.fa"
@@ -59,8 +68,7 @@ def _readSeqs(subtypes):
     records = list(SeqIO.parse(os.path.join(HERE, CONSENSUS_FASTA), "fasta"))
     if ids:
         return [rec.seq for rec in records if rec.id in ids]
-    else:
-        return [rec.seq for rec in records]
+    return [rec.seq for rec in records]
 
 
 def _getConsensusDict(subtypes=None):
@@ -71,8 +79,7 @@ def _getConsensusDict(subtypes=None):
     records = list(SeqIO.parse(os.path.join(HERE, CONSENSUS_FASTA), "fasta"))
     if ids:
         return {rec.id: rec.seq for rec in records if rec.id in ids}
-    else:
-        return {rec.id: rec.seq for rec in records}
+    return {rec.id: rec.seq for rec in records}
 
 
 def getConsensusAAs(subtypes):
@@ -80,9 +87,9 @@ def getConsensusAAs(subtypes):
     Get features (pos_AA) corresponding to consensus features of given subtypes
     """
     seqs = _readSeqs(subtypes)
-    vars = [["{}_{}".format(i + 1, AA) for (i, AA) in enumerate(seq)] for seq in seqs]
+    vars_ = [["{}_{}".format(i + 1, AA) for (i, AA) in enumerate(seq)] for seq in seqs]
 
-    return list(set([var for varSet in vars for var in varSet]))
+    return list(set([var for varSet in vars_ for var in varSet]))
 
 
 def split_data(dataset, target):
@@ -157,10 +164,9 @@ def sequence_removal_wrapper(dataset, choice):
     """
     if choice.upper() == "DRM":
         return dataset[dataset["hasDRM"] == 0]
-    elif choice.upper() == "NO DRM":
+    if choice.upper() == "NO DRM":
         return dataset[dataset["hasDRM"] == 1]
-    else:
-        return dataset
+    return dataset
 
 
 def subsampling_balance(data, target):

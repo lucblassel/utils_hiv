@@ -20,8 +20,16 @@ from sklearn.naive_bayes import ComplementNB, MultinomialNB
 from sklearn.neighbors import KNeighborsClassifier
 
 from .data_utils import split_data, subsampling_balance
-from .metrics import *
-from .DRM_utils import *
+from .DRM_utils import (
+    get_SDRMs,
+    get_DRMs_only,
+    get_all_DRMs,
+    get_accessory,
+    get_standalone,
+    get_NRTI,
+    get_NNRTI,
+    get_Other,
+)
 
 HERE = os.path.dirname(__file__)
 
@@ -46,7 +54,12 @@ class FisherTestModel:
                 f"correction must be one of following: {FisherTestModel.CORRECTIONS}"
             )
         self.n_vote = n_vote
-        self.correction, self.subtype, self.alpha, self.target = correction, subtype, alpha, target
+        self.correction, self.subtype, self.alpha, self.target = (
+            correction,
+            subtype,
+            alpha,
+            target,
+        )
         self.mutations = self._read_file(correction, subtype, DRMs, seqs, target, alpha)
         self.classes_ = [0, 1]
 
@@ -106,10 +119,10 @@ class DRMClassifier:
         "OTHER": get_Other,
     }
 
-    def __init__(self, type, votes):
+    def __init__(self, type_, votes):
         self.votes = votes
         self.classes_ = [0, 1]
-        self.mutations = DRMClassifier.choices.get(type)()
+        self.mutations = DRMClassifier.choices.get(type_)()
         if self.mutations is None:
             raise ValueError(
                 f"wrong mutation class, must one of: {DRMClassifier.choices}"
@@ -261,9 +274,7 @@ def get_predictions(model, test_set, target, balance=False):
 
 def get_coefficients(model, features):
     index = model.classes_ if len(model.classes_) > 2 else model.classes_[-1:]
-    if isinstance(model, RandomForestClassifier) or isinstance(
-        model, RandomForestRegressor
-    ):
+    if isinstance(model, (RandomForestClassifier, RandomForestRegressor)):
         coefs = [model.feature_importances_] * len(index)
     elif np.array([isinstance(model, clf) for clf in STAT_MODELS.values()]).any():
         coefs = model.mutations.copy()
