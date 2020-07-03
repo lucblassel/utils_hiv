@@ -75,7 +75,7 @@ if __name__ == "__main__":
 
     pval_all = pd.concat(pvals, axis=0)
     subset = pval_all.loc[
-        :, ["Bonferroni", "fdr_bh", "fdr_by", "DRMs", "seqs", "subtype", "target"]
+        :, ["p_value", "Bonferroni", "fdr_bh", "fdr_by", "DRMs", "seqs", "subtype", "target"]
     ]
 
     subset.to_csv(
