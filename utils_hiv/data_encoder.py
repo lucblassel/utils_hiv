@@ -6,7 +6,7 @@ import pandas as pd
 from Bio import SeqIO
 from category_encoders import OneHotEncoder
 
-from .DRM_utils import get_all_DRMs
+from DRM_utils import get_all_DRMs
 
 HERE = os.path.dirname(__file__)
 SEQUENCE_ID_COL = "inputSequence"
@@ -337,12 +337,12 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--naive",
-        help="tab delimited file pairwise mutations for naive samples",
+        help="tab delimited file pairwise mutations for naive samples (Pretty{gene}AA_naive.tsv)",
         required=True,
     )
     parser.add_argument(
         "--treated",
-        help="tab delimited file pairwise mutations for treated samples",
+        help="tab delimited file pairwise mutations for treated samplesi (Pretty{gene}AA_treated.tsv)",
         required=True,
     )
     parser.add_argument(
@@ -352,7 +352,7 @@ if __name__ == "__main__":
     )
     parser.add_argument(
         "--resistance",
-        help="tab delimited resistance summary file from the HIVDB program",
+        help="tab delimited resistance summary file from the HIVDB program (ResistanceSummary_{label}.tsv)",
         nargs=2,
         required=True,
     )
