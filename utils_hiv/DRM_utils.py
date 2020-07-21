@@ -56,3 +56,10 @@ def get_NNRTI():
 def get_Other():
     """returns mutations caused by neither NRTIs nor NNRTIs"""
     return MUTATIONS[MUTATIONS["type"] == "Other"]["feature"].values.tolist()
+
+def get_DRM_names():
+    """returns a dictionnary with feature names and DRM names in correspondence"""
+    return {
+        row['feature']: f"{row['WT']}{row['Pos']}{row['Mut']}"
+        for _, row in MUTATIONS.iterrows()
+    } 
