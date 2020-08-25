@@ -213,6 +213,12 @@ def pair_measure_with_features(features, measures):
     return paired
 
 
+def read_data(data):
+    if isinstance(data, str):
+        return pd.read_csv(data, sep="\t", index_col=0, header=0)
+    return data
+
+
 def train_model(
     model_type, train_set, params_path, target, subtype, DRMs, seqs, balance=False
 ):
@@ -231,7 +237,8 @@ def train_model(
         params = params_path
     else:
         params = json.load(open(params_path, "r"))
-    data = pd.read_csv(train_set, sep="\t", header=0, index_col=0)
+
+    data = read_data(train_set)
 
     if balance:
         data = subsampling_balance(data, target)
@@ -247,7 +254,8 @@ def train_model(
 
 
 def get_predictions(model, test_set, target, balance=False):
-    data = pd.read_csv(test_set, sep="\t", header=0, index_col=0)
+
+    data = read_data(test_set)
 
     if target in REGRESSION_TARGETS:
         target = f"{target}_Score"
