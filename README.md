@@ -37,4 +37,20 @@ These files are in `utils_hiv/data` and are used by submodules.
 
 ### DRM files
 `NRTI.tab` and `NNRTI.tab` are local copies of HIVDB files ([1](https://hivdb.stanford.edu/pages/SDRM.worksheet.NRTI.html), [2](https://hivdb.stanford.edu/pages/SDRM.worksheet.NNRTI.html)).  
-`mutation_characteristic.tab` is used by the `DRM_utils` submodule and contains known DRMs with their type (NRTI,NNRTI,Other), their SDRM status. This was obtained through the [HIVDB program](https://hivdb.stanford.edu/hivdb) and hand-curated. The accessory/primary role of each mutation was determined by the HIVDB program comment. 
+`mutation_characteristic.tab` is used by the `DRM_utils` submodule and contains known DRMs with their type (NRTI,NNRTI,Other), their SDRM status. This was obtained through the [HIVDB program](https://hivdb.stanford.edu/hivdb) and hand-curated. The accessory/primary role of each mutation was determined by the HIVDB program comment.  
+
+### consensus.fa
+This file contains the reference sequences for the main HIV-1 subtypes present in our datasets. These sequences were obtained from the [Los Alamos HIV sequence database](http://www.hiv.lanl.gov/), they are used to determine what features to remove when encoding sequences. 
+
+### fisher_p_values.tsv
+This file contains the results of fisher exact tests for all mutations in the datasets w.r.t to treatment or DRM presence/absence, with raw and corrected (for multiple testing) p-values. These p-values are used to build our "Fisher classifiers". 
+
+## dependencies
+This module depends on the following python packages: 
+ - pandas
+ - scikit-learn
+ - biopython
+ - statsmodels
+ - category_encoders
+ - scipy
+ - numpy

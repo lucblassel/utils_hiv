@@ -15,7 +15,10 @@ setuptools.setup(
         'pandas',
         'scikit-learn',
         'biopython',
-        'category_encoders'
+        'statsmodels',
+        'category_encoders',
+        'scipy',
+        'numpy'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
