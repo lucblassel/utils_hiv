@@ -46,11 +46,12 @@ This file contains the reference sequences for the main HIV-1 subtypes present i
 This file contains the results of fisher exact tests for all mutations in the datasets w.r.t to treatment or DRM presence/absence, with raw and corrected (for multiple testing) p-values. These p-values are used to build our "Fisher classifiers". 
 
 ## dependencies
-This module depends on the following python packages: 
- - pandas
- - scikit-learn
- - biopython
- - statsmodels
- - category_encoders
- - scipy
- - numpy
+This module depends on the following python packages:
+ - python **3.7.6**
+ - pandas **0.25.3**
+ - scikit-learn **0.20.3**
+ - biopython **1.74**
+ - statsmodels **0.9.0**
+ - category_encoders **1.3.0**
+ - scipy **1.4.1**
+ - numpy **1.18.1**

@@ -4,7 +4,7 @@ import pandas as pd
 from scipy.stats import fisher_exact
 from statsmodels.stats.multitest import multipletests
 
-from DRM_utils import get_all_DRMs
+from utils.DRM_utils import get_all_DRMs
 
 
 def get_pvalue(df, target="encoded_label"):
