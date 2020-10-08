@@ -12,13 +12,13 @@ setuptools.setup(
     long_description=long_description,
     packages = setuptools.find_packages(),
     install_requires=[
-        'pandas',
-        'scikit-learn',
-        'biopython',
-        'statsmodels',
-        'category_encoders',
-        'scipy',
-        'numpy'
+        'pandas==0.25.3',
+        'scikit-learn==0.20.3',
+        'biopython==1.74',
+        'statsmodels==0.9.0',
+        'category_encoders==1.3.0',
+        'scipy==1.4.1',
+        'numpy==1.18.1'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",

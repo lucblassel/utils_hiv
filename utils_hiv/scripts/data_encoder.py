@@ -6,7 +6,7 @@ import pandas as pd
 from Bio import SeqIO
 from category_encoders import OneHotEncoder
 
-from DRM_utils import get_all_DRMs
+from ..utils.DRM_utils import get_all_DRMs
 
 HERE = os.path.dirname(__file__)
 SEQUENCE_ID_COL = "inputSequence"
