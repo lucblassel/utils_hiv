@@ -18,7 +18,7 @@ setuptools.setup(
         'statsmodels==0.9.0',
         'category_encoders==1.3.0',
         'scipy==1.4.1',
-        'numpy==1.18.1'
+        'numpy==1.22.0'
     ],
     classifiers=[
         "Programming Language :: Python :: 3",
