@@ -17,7 +17,7 @@ setuptools.setup(
         'biopython==1.74',
         'statsmodels==0.9.0',
         'category_encoders==1.3.0',
-        'scipy==1.4.1',
+        'scipy==1.10.0',
         'numpy==1.22.0'
     ],
     classifiers=[
